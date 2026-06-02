@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAFS 財務狀況表挑戰賽：中環投行晉升記</title>
+    <style>
+        :root {
+            --primary-color: #0f2027;
+            --secondary-color: #203a43;
+            --accent-color: #ffd700;
+            --text-light: #ffffff;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--accent-color);
+            margin-bottom: 5px;
+            font-size: 2rem;
+        }
+
+        .container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 800px;
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
+        .menu-section, .game-section {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        .btn {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px 5px;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background: var(--accent-color);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .level-select-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e2e8f0;
+            margin-bottom: 15px;
+        }
+
+        .level-select-btn h3 {
+            margin: 0 0 5px 0;
+            color: var(--secondary-color);
+        }
+
+        .account-card {
+            background: #f0f4f8;
+            border-left: 5px solid #3498db;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: none;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback.wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            height: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #27ae60;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>💼 BAFS 財務狀況表挑戰賽</h1>
+        <p>📊 目標：將帳戶正確分類，由「煙囪實習生」晉升做「中環一哥」！</p>
+    </header>
+
+    <div class="container">
+        
+        <!-- 主選單：選擇題目 -->
+        <div id="menu-section" class="menu-section active">
+            <h2>揀選你的商業項目 (Level Select)：</h2>
+            <p>請選擇一間公司來幫他們編製 SOFP：</p>
+            
+            <button class="btn level-select-btn" onclick="startLevel(0)">
+                <h3>🏢 項目一：香江茶餐廳 (初級)</h3>
+                <p>適合啱啱起步嘅你，全屬最基礎嘅日常營運帳戶。</p>
+            </button>
+            
+            <button class="btn level-select-btn" onclick="startLevel(1)">
+                <h3>💻 項目二：閃電科技零售店 (中級)</h3>
+                <p>涉獵更多科技資產同短期債務，考考你嘅清算流動性概念。</p>
+            </button>
+            
+            <button class="btn level-select-btn" onclick="startLevel(2)">
+                <h3>🚢 項目三：東方物流國際 (高級挑戰)</h3>
+                <p>包含長期借貸同大型運輸資產，睇下你分唔分到長短期項目！</p>
+            </button>
+        </div>
+
+        <!-- 遊戲主介面 -->
+        <div id="game-section" class="game-section">
+            <div class="score-board">
+                <span id="level-title">項目</span>
+                <span id="question-number">題目: 1/5</span>
+            </div>
+            
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+            </div>
+
+            <p style="font-size: 0.9rem; color: #666; margin-bottom: 5px;">請將以下帳戶歸類到正確的 SOFP 位置：</p>
+            <div id="account-card" class="account-card">
+                載入中...
+            </div>
+
+            <div class="options-grid">
+                <button class="btn" onclick="checkAnswer('NCA')">🏢 非流動資產 (Non-current Assets)</button>
+                <button class="btn" onclick="checkAnswer('CA')">💰 流動資產 (Current Assets)</button>
+                <button class="btn" onclick="checkAnswer('C')">🔑 資本的計算 (Capital)</button>
+                <button class="btn" onclick="checkAnswer('NCL')">🏦 非流動負債 (Non-current Liabilities)</button>
+                <button class="btn" onclick="checkAnswer('CL')">💳 流動負債 (Current Liabilities)</button>
+            </div>
+
+            <div id="feedback" class="feedback"></div>
+
+            <div style="text-align: right; margin-top: 15px;">
+                <button id="next-btn" class="btn" style="background:#e67e22; display:none;" onclick="nextQuestion()">下一題 ➡️</button>
+                <button id="back-btn" class="btn" style="background:#7f8c8d;" onclick="showMenu()">放棄並返回主頁</button>
+            </div>
+        </div>
+
+        <!-- 結算畫面 -->
+        <div id="result-section" class="menu-section">
+            <h2>批核報告已完成！📝</h2>
+            <div id="result-message" style="font-size: 1.2rem; margin: 20px 0; line-height: 1.6;"></div>
+            <button class="btn" onclick="showMenu()">再挑戰其他項目</button>
+        </div>
+
+    </div>
+
+    <script>
+        // 題目數據庫 (針對BAFS初學者難度)
+        const levels = [
+            {
+                title: "香江茶餐廳",
+                questions: [
+                    { name: "舖位及建築物 (Premises)", cat: "NCA", desc: "舖位係買嚟長期自用嘅營運基地，屬於非流動資產。" },
+                    { name: "廚房設備 (Kitchen Equipment)", cat: "NCA", desc: "雪櫃、爐具可以用好多年，係非流動資產。" },
+                    { name: "食材及飲品存貨 (Inventory)", cat: "CA", desc: "食材好快會用嚟做生意變現，屬於流動資產。" },
+                    { name: "東主注資 (Capital)", cat: "C", desc: "東主投入生意嘅資金，構成咗資本嘅核心。" },
+                    { name: "收銀機內的現金 (Cash in hand)", cat: "CA", desc: "手頭現金隨時用得，係流動性最高嘅流動資產。" }
+                ]
+            },
+            {
+                title: "閃電科技零售店",
+                questions: [
+                    { name: "待售智能手機 (Inventory)", cat: "CA", desc: "準備賣比客嘅貨品，屬於流動資產。" },
+                    { name: "辦公室電腦及傢俬 (Office Equipment)", cat: "NCA", desc: "公司自己用嘅電腦同枱櫈，係長期資產（非流動資產）。" },
+                    { name: "應付供應商貨款 (Trade Payables / Creditors)", cat: "CL", desc: "爭批發商嘅貨期通常幾十日内要還，屬於流動負債。" },
+                    { name: "銀行存款 (Cash at Bank)", cat: "CA", desc: "銀行戶口嘅錢可以隨時提走，屬於流動資產。" },
+                    { name: "應收客人的賒帳 (Trade Receivables / Debtors)", cat: "CA", desc: "個客應承咗短期內入數，係我哋嘅流動資產。" }
+                ]
+            },
+            {
+                title: "東方物流國際",
+                questions: [
+                    { name: "貨車車隊 (Motor Vehicles)", cat: "NCA", desc: "貨車係用嚟送貨嘅長期生產工具，屬於非流動資產。" },
+                    { name: "五年期銀行商業貸款 (5-year Bank Loan)", cat: "NCL", desc: "還款期超過一年（呢度要五年），屬於非流動負債。" },
+                    { name: "本年淨利潤 (Net Profit for the year)", cat: "C", desc: "賺到嘅純利會加落資本（Capital）度，令東主權益增加。" },
+                    { name: "下個月到期的應付電費 (Accrued Electricity Expenses)", cat: "CL", desc: "短期內必須支付嘅應付未付費用，屬於流動負債。" },
+                    { name: "東主提取私人用途 (Drawings)", cat: "C", desc: "提款會直接喺資本（Capital）部分扣減。" }
+                ]
+            }
+        ];
+
+        // 地道港語讚賞語庫
+        const positiveFeedback = [
+            "直衝中環頂樓！「些」得好準確！ 🚀",
+            "賺到啪啪聲！呢題完全難你唔倒！💰",
+            "有潛質做一哥！老細睇到實加你人工！📈",
+            "直覺好強！分得一清二楚，非常Smart！🔥",
+            "好波！全中！直頭可以去考會計師牌啦！🎓"
+        ];
+
+        // 地道港語安慰語庫
+        const negativeFeedback = [
+            "哎呀，差少少！過嚟「補多兩堂」再試過！ ☕",
+            "跌咗眼鏡添！呢個分法老細會詐型啵，睇清答卷解釋！👀",
+            "倒瀉籮蟹！呢個分類唔係幾啱，重新諗下個長短期性質！📉",
+            "水洗都唔清！再望望個帳戶，佢維持到幾耐？🏃‍♂️"
+        ];
+
+        let currentLevel = 0;
+        let currentQuestionIdx = 0;
+        let score = 0;
+        let hasAnswered = false;
+
+        function showMenu() {
+            document.getElementById('menu-section').className = "menu-section active";
+            document.getElementById('game-section').className = "game-section";
+            document.getElementById('result-section').className = "menu-section";
+        }
+
+        function startLevel(levelIdx) {
+            currentLevel = levelIdx;
+            currentQuestionIdx = 0;
+            score = 0;
+            
+            document.getElementById('menu-section').className = "menu-section";
+            document.getElementById('game-section').className = "game-section active";
+            
+            document.getElementById('level-title').innerText = "🏢 項目：" + levels[currentLevel].title;
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            hasAnswered = false;
+            const currentLevelData = levels[currentLevel];
+            const q = currentLevelData.questions[currentQuestionIdx];
+            
+            // 更新進度條同題號
+            document.getElementById('question-number').innerText = `題目: ${currentQuestionIdx + 1} / ${currentLevelData.questions.length}`;
+            const progressPercent = (currentQuestionIdx / currentLevelData.questions.length) * 100;
+            document.getElementById('progress-fill').style.width = progressPercent + "%";
+            
+            // 顯示帳戶名稱
+            document.getElementById('account-card').innerText = q.name;
+            
+            // 隱藏回饋及下一題掣
+            const feedbackDiv = document.getElementById('feedback');
+            feedbackDiv.style.display = 'none';
+            document.getElementById('next-btn').style.display = 'none';
+        }
+
+        function checkAnswer(userChoice) {
+            if (hasAnswered) return; // 防止重複點擊
+            hasAnswered = true;
+
+            const q = levels[currentLevel].questions[currentQuestionIdx];
+            const feedbackDiv = document.getElementById('feedback');
+            
+            if (userChoice === q.cat) {
+                score++;
+                const randomReward = positiveFeedback[Math.floor(Math.random() * positiveFeedback.length)];
+                feedbackDiv.className = "feedback correct";
+                feedbackDiv.innerHTML = `🎉 <strong>${randomReward}</strong><br><br>💡 <b>會計小知識：</b>${q.desc}`;
+            } else {
+                const randomConsolation = negativeFeedback[Math.floor(Math.random() * negativeFeedback.length)];
+                feedbackDiv.className = "feedback wrong";
+                
+                // 轉換易讀名稱
+                let correctName = "";
+                if(q.cat === 'NCA') correctName="非流動資產";
+                if(q.cat === 'CA') correctName="流動資產";
+                if(q.cat === 'C') correctName="資本的計算";
+                if(q.cat === 'NCL') correctName="非流動負債";
+                if(q.cat === 'CL') correctName="流動負債";
+
+                feedbackDiv.innerHTML = `❌ <strong>${randomConsolation}</strong><br>正確答案應該係：<b>【${correctName}】</b><br><br>💡 <b>原因：</b>${q.desc}`;
+            }
+            
+            feedbackDiv.style.display = 'block';
+            document.getElementById('next-btn').style.display = 'inline-block';
+        }
+
+        function nextQuestion() {
+            currentQuestionIdx++;
+            const currentLevelData = levels[currentLevel];
+            
+            if (currentQuestionIdx < currentLevelData.questions.length) {
+                loadQuestion();
+            } else {
+                // 結算
+                document.getElementById('progress-fill').style.width = "100%";
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('game-section').className = "game-section";
+            const resultSection = document.getElementById('result-section');
+            resultSection.className = "menu-section active";
+            
+            const total = levels[currentLevel].questions.length;
+            const scorePercent = (score / total) * 100;
+            
+            let comment = "";
+            if (score === total) {
+                comment = "🏆 <b>神級會計師！</b> 你已經完美掌握 SOFP 嘅精髓！中環投行老細決定即時升你做 Partner，分花紅分到手軟！👏🔥";
+            } else if (score >= total * 0.6) {
+                comment = "💼 <b>合格有餘！</b> 基本功好扎實！順利通過實習期，正式做 A grade 員工，繼續加油，頂樓經理位等緊你！✨";
+            } else {
+                comment = "☕ <b>再接再厲！</b> 似乎有少少混淆咗長短期資產/負債啵。唔緊要，買杯凍奶茶醒吓神，再返黎挑戰過，你實得嘅！💪";
+            }
+            
+            document.getElementById('result-message').innerHTML = `
+                你在 <b>${levels[currentLevel].title}</b> 的評核結果如下：<br>
+                <span style="font-size:2rem; color:#27ae60; font-weight:bold;">${score} / ${total} 答對</span><br><br>
+                ${comment}
+            `;
+        }
+    </script>
+</body>
+</html>
